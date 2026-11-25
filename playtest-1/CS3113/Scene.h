@@ -6,14 +6,13 @@
 struct GameState
 {
     Entity *player;      // nullptr in the menu / win / lose scenes
-    Map    *map;
+    Map    *map;         // the walls; the floor is drawn by its own map
     Entity *enemies;
     int     enemyCount;
-    Entity *flag;        // reach it to finish the level
-    Entity *lava;        // rises from the bottom; touching it costs a life
+    Entity *door;        // locked until every task is done, then the way out
     Entity *banner;      // the text image in the menu / win / lose scenes
 
-    bool    playerDied;  // touched an enemy or the lava; main takes away a life
+    bool    playerDied;  // touched the lava or an enemy; main takes away a life
     SceneID nextSceneID;
 };
 
@@ -30,6 +29,7 @@ public:
     virtual ~Scene() {}
 
     virtual void initialise() = 0;
+    virtual void processInput() {}   // once a frame; only levels read keys here
     virtual void update(float deltaTime) = 0;
     virtual void render() = 0;
     virtual void shutdown() = 0;

@@ -9,13 +9,12 @@ class TextScene : public Scene
 {
 private:
     const char *mBannerFilepath;
+    Vector2     mBannerScale;
 
 public:
-    static constexpr float BANNER_WIDTH  = 800.0f,
-                           BANNER_HEIGHT = 220.0f;
-
     TextScene();
-    TextScene(Vector2 origin, const char *bgHexCode, const char *bannerFilepath);
+    TextScene(Vector2 origin, const char *bgHexCode,
+              const char *bannerFilepath, Vector2 bannerScale);
     ~TextScene();
 
     void initialise() override;

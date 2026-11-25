@@ -23,6 +23,10 @@ ifeq ($(wildcard CS3113/TextScene.cpp),CS3113/TextScene.cpp)
     SRCS += CS3113/TextScene.cpp
 endif
 
+ifeq ($(wildcard CS3113/ShaderProgram.cpp),CS3113/ShaderProgram.cpp)
+    SRCS += CS3113/ShaderProgram.cpp
+endif
+
 ifeq ($(wildcard CS3113/LevelScene.cpp),CS3113/LevelScene.cpp)
     SRCS += CS3113/LevelScene.cpp
 endif

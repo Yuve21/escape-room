@@ -1,6 +1,6 @@
 /**
 * Author: Yuvraj Chandyok
-* Assignment: Rising Heat
+* Assignment: Escape Room
 * Date due: December 7, 2026, 2:00pm
 * I pledge that I have completed this assignment without
 * collaborating with anyone else, in conformance with the

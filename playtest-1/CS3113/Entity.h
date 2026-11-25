@@ -32,8 +32,6 @@ private:
     int   mCurrentFrameIndex = 0;
     float mAnimationTime     = 0.0f;
 
-    bool  mIsJumping    = false;
-    float mJumpingPower = 0.0f;
 
     int   mSpeed;
     float mAngle;
@@ -112,7 +110,6 @@ public:
     void render();
     void normaliseMovement() { Normalise(&mMovement); }
 
-    void jump()       { mIsJumping = true;         }
     void activate()   { mEntityStatus = ACTIVE;    }
     void deactivate() { mEntityStatus = INACTIVE;  }
     void displayCollider();
@@ -138,8 +135,6 @@ public:
     TextureType getTextureType()           const { return mTextureType;           }
     Direction   getDirection()             const { return mDirection;             }
     int         getFrameSpeed()            const { return mFrameSpeed;            }
-    float       getJumpingPower()          const { return mJumpingPower;          }
-    bool        isJumping()                const { return mIsJumping;             }
     int         getSpeed()                 const { return mSpeed;                 }
     float       getAngle()                 const { return mAngle;                 }
     EntityType  getEntityType()            const { return mEntityType;            }
@@ -169,8 +164,6 @@ public:
         { mSpeed = newSpeed;                       }
     void setFrameSpeed(int newSpeed)
         { mFrameSpeed = newSpeed;                  }
-    void setJumpingPower(float newJumpingPower)
-        { mJumpingPower = newJumpingPower;         }
     void setAngle(float newAngle)
         { mAngle = newAngle;                       }
     void setEntityType(EntityType entityType)

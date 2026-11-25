@@ -1,6 +1,6 @@
 /**
 * Author: Yuvraj Chandyok
-* Assignment: Rising Heat
+* Assignment: Escape Room
 * Date due: December 7, 2026, 2:00pm
 * I pledge that I have completed this assignment without
 * collaborating with anyone else, in conformance with the
@@ -9,25 +9,33 @@
 **/
 
 /*
-    RISING HEAT
+    ESCAPE ROOM
 
     Controls
         ENTER     start (menu) / back to the menu (win or lose screen)
-        A / D     walk left / right
-        W         jump
+        W A S D   walk
+        E         use a task station / step away from it
+        A, D      (valve task) turn the valve, one key after the other
+        SPACE     (gauge task) stop the needle in the green
         1         jump straight to level 1 (debugging)
         Q         quit
 
-    Climb to the flag at the top of the volcano before the lava gets you.
-    Three lives for the whole game. Touching the lava or an enemy costs one
-    and restarts the level.
+    Lava is flooding the room one tile at a time. Finish every task to unlock
+    the door and get out. Messing up a task makes the lava hotter: it changes
+    colour and spreads faster. Three lives for the whole game. Touching the
+    lava or a slime costs one and restarts the room.
 
-    Assets (all CC0):
-        art    - "Platformer Art Deluxe" by Kenney (www.kenney.nl)
-        music  - "Retro Game Music Pack" by Juhani Junkala
-        sounds - "The Essential Retro Video Game Sound Effects Collection"
-                 by Juhani Junkala
-        font   - Kenvector Future by Kenney, used for the text images
+    Assets:
+        tiles, door, stations - "Tiny Dungeon" by Kenney (www.kenney.nl), CC0
+        player and enemies    - "Tiny 16: Basic" by Lanea Zimmerman (Sharm),
+                                CC-BY 3.0, opengameart.org/content/tiny-16-basic
+        hearts                - "Platformer Art Deluxe" by Kenney, CC0
+        lava tile             - drawn for this game
+        music                 - "Retro Game Music Pack" by Juhani Junkala, CC0
+        sounds                - "The Essential Retro Video Game Sound Effects
+                                Collection" by Juhani Junkala, CC0
+        font                  - Kenney Pixel from "Kenney Fonts" by Kenney, CC0,
+                                used for the text images
 */
 
 #include "CS3113/TextScene.h"
@@ -66,8 +74,7 @@ Entity *gFullHearts  = nullptr;
 Entity *gEmptyHearts = nullptr;
 
 Music gMusic;
-Sound gJumpSound,
-      gHurtSound,
+Sound gHurtSound,
       gLevelClearSound,
       gWinSound,
       gLoseSound;
@@ -95,8 +102,8 @@ void switchToScene(SceneID id)
 }
 
 // levels: follow the player up and down, but stop at the map's top and
-// bottom so the camera never shows past the level. The levels are exactly one
-// screen wide, so the camera never moves sideways. Text scenes: the centre.
+// bottom so the camera never shows past the room. A room that is exactly one
+// screen big never moves the camera at all. Text scenes: the centre.
 Vector2 cameraTargetFor(GameState state)
 {
     if (state.player == nullptr) return ORIGIN;
@@ -145,14 +152,13 @@ void handleSceneChanges()
 
 void initialise()
 {
-    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Rising Heat");
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Escape Room");
     InitAudioDevice();
 
     gMusic = LoadMusicStream("assets/game/music.ogg");
     SetMusicVolume(gMusic, MUSIC_VOLUME);
     PlayMusicStream(gMusic);
 
-    gJumpSound       = LoadSound("assets/game/jump.wav");
     gHurtSound       = LoadSound("assets/game/hurt.wav");
     gLevelClearSound = LoadSound("assets/game/level_clear.wav");
     gWinSound        = LoadSound("assets/game/win.wav");
@@ -161,10 +167,10 @@ void initialise()
     /*
         ----------- SCENES -----------
     */
-    gScenes[MENU]    = new TextScene(ORIGIN, "#2A1410", "assets/game/menu.png");
-    gScenes[LEVEL_1] = new Level1(ORIGIN, "#4A2A22", WIN);
-    gScenes[WIN]     = new TextScene(ORIGIN, "#1F3D2A", "assets/game/win.png");
-    gScenes[LOSE]    = new TextScene(ORIGIN, "#3D1F24", "assets/game/lose.png");
+    gScenes[MENU]    = new TextScene(ORIGIN, "#1E1412", "assets/game/menu.png", { 800.0f, 470.0f });
+    gScenes[LEVEL_1] = new Level1(ORIGIN, "#1E1412", WIN);
+    gScenes[WIN]     = new TextScene(ORIGIN, "#1F3D2A", "assets/game/win.png",  { 800.0f, 220.0f });
+    gScenes[LOSE]    = new TextScene(ORIGIN, "#3D1F24", "assets/game/lose.png", { 800.0f, 220.0f });
 
     /*
         ----------- LIVES (drawn on top of the level, not in it) -----------
@@ -223,22 +229,8 @@ void processInput()
     if (gRequestedScene != NO_SCENE && gRequestedScene != MENU && gLives <= 0)
         gLives = MAX_LIVES;
 
-    Entity *player = gCurrentScene->getState().player;
-    if (player == nullptr) return;   // text scenes have nobody to move
-
-    player->resetMovement();
-
-    if      (IsKeyDown(KEY_A)) player->moveLeft();
-    else if (IsKeyDown(KEY_D)) player->moveRight();
-
-    if (IsKeyPressed(KEY_W) && player->isCollidingBottom())
-    {
-        player->jump();
-        PlaySound(gJumpSound);
-    }
-
-    // to avoid faster diagonal speed
-    if (GetLength(player->getMovement()) > 1.0f) player->normaliseMovement();
+    // walking and the tasks are handled by the level itself
+    gCurrentScene->processInput();
 }
 
 void update()
@@ -302,7 +294,6 @@ void shutdown()
     delete[] gEmptyHearts;
 
     UnloadMusicStream(gMusic);
-    UnloadSound(gJumpSound);
     UnloadSound(gHurtSound);
     UnloadSound(gLevelClearSound);
     UnloadSound(gWinSound);

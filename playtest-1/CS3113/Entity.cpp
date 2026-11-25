@@ -1,6 +1,6 @@
 /**
 * Author: Yuvraj Chandyok
-* Assignment: Rising Heat
+* Assignment: Escape Room
 * Date due: December 7, 2026, 2:00pm
 * I pledge that I have completed this assignment without
 * collaborating with anyone else, in conformance with the
@@ -191,24 +191,24 @@ void Entity::checkCollisionY(Map *map)
     float xOverlap = 0.0f;
     float yOverlap = 0.0f;
 
-    // COLLISION ABOVE (jumping upward)
+    // COLLISION ABOVE (moving up)
     if ((map->isSolidTileAt(topCentreProbe, &xOverlap, &yOverlap) ||
          map->isSolidTileAt(topLeftProbe, &xOverlap, &yOverlap) ||
          map->isSolidTileAt(topRightProbe, &xOverlap, &yOverlap)) &&
-        mVelocity.y < 0.0f)
+        mVelocity.y < 0.0f && xOverlap >= 0.5f)
     {
-        mPosition.y     += yOverlap; // push down
+        mPosition.y     += yOverlap * 1.01f; // push down
         mVelocity.y      = 0.0f;
         mIsCollidingTop  = true;
     }
 
-    // COLLISION BELOW (falling downward)
+    // COLLISION BELOW (moving down)
     if ((map->isSolidTileAt(bottomCentreProbe, &xOverlap, &yOverlap) ||
          map->isSolidTileAt(bottomLeftProbe, &xOverlap, &yOverlap) ||
          map->isSolidTileAt(bottomRightProbe, &xOverlap, &yOverlap)) &&
-        mVelocity.y > 0.0f)
+        mVelocity.y > 0.0f && xOverlap >= 0.5f)
     {
-        mPosition.y        -= yOverlap; // push up
+        mPosition.y        -= yOverlap * 1.01f; // push up
         mVelocity.y         = 0.0f;
         mIsCollidingBottom  = true;
     }
@@ -457,20 +457,9 @@ void Entity::update(
 
     resetColliderFlags();
 
+    // top-down: no gravity and no jumping, the keys set the speed on both axes
     mVelocity.x = mMovement.x * mSpeed;
-
-    mVelocity.x += mAcceleration.x * deltaTime;
-    mVelocity.y += mAcceleration.y * deltaTime;
-
-    // ––––– JUMPING ––––– //
-    if (mIsJumping)
-    {
-        // STEP 1: Immediately return the flag to its original false state
-        mIsJumping = false;
-
-        // STEP 2: The player now acquires an upward velocity
-        mVelocity.y -= mJumpingPower;
-    }
+    mVelocity.y = mMovement.y * mSpeed;
 
     mPosition.y += mVelocity.y * deltaTime;
     checkCollisionY(collidableEntities, collisionCheckCount);
@@ -480,10 +469,12 @@ void Entity::update(
     checkCollisionX(collidableEntities, collisionCheckCount);
     checkCollisionX(map);
 
-    // Only animate if we're on the ground (not necessary)
-    if (mTextureType == ATLAS && GetLength(mMovement) != 0 &&
-        mIsCollidingBottom)
-        animate(deltaTime);
+    // walk while moving; stand still on the first frame of the walk
+    if (mTextureType == ATLAS)
+    {
+        if (GetLength(mMovement) != 0) animate(deltaTime);
+        else                           mCurrentFrameIndex = 0;
+    }
 }
 
 void Entity::render()
