@@ -1,0 +1,4 @@
+Kenney Fonts by Kenney (www.kenney.nl)
+https://opengameart.org/content/kenney-fonts
+License: CC0 1.0 Universal (public domain)
+Used for: the text in menu.png, win.png, lose.png, the task panels and the banners

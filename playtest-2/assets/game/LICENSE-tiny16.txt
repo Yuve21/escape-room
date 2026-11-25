@@ -1,0 +1,4 @@
+Tiny 16: Basic by Lanea Zimmerman (Sharm)
+https://opengameart.org/content/tiny-16-basic
+License: CC-BY 3.0 (https://creativecommons.org/licenses/by/3.0/)
+Used for: player.png, slime.png, bat.png, ghost.png, spider.png (cut from characters.png)
