@@ -253,8 +253,7 @@ void LevelScene::createInterface()
     mHotterSound   = LoadSound("assets/game/hotter.wav");
     mTaskDoneSound = LoadSound("assets/game/task_done.wav");
     mDoorSound     = LoadSound("assets/game/door.wav");
-    mStepsSound    = LoadSound("assets/game/steps.wav");
-    SetSoundVolume(mStepsSound, 0.5f);
+    mStepSound     = LoadSound("assets/game/step.wav");
     mSoundsLoaded  = true;
 }
 
@@ -447,7 +446,6 @@ void LevelScene::processInput()
 
     if (mOpenStation != -1)
     {
-        StopSound(mStepsSound);
         taskInput();
         return;
     }
@@ -460,11 +458,6 @@ void LevelScene::processInput()
 
     // to avoid faster diagonal speed
     if (GetLength(player->getMovement()) > 1.0f) player->normaliseMovement();
-
-    // footsteps while walking
-    bool walking = GetLength(player->getMovement()) > 0.0f;
-    if (walking && !IsSoundPlaying(mStepsSound)) PlaySound(mStepsSound);
-    if (!walking && IsSoundPlaying(mStepsSound)) StopSound(mStepsSound);
 
     if (IsKeyPressed(KEY_E) && mNearStation != -1) openTask(mNearStation);
 }
@@ -490,6 +483,18 @@ void LevelScene::update(float deltaTime)
     }
 
     if (mOpenStation != -1) updateTask(deltaTime);
+
+    // footsteps while walking
+    if (GetLength(mGameState.player->getMovement()) > 0.0f)
+    {
+        mStepTimer += deltaTime;
+        if (mStepTimer >= STEP_TIME)
+        {
+            mStepTimer = 0.0f;
+            PlaySound(mStepSound);
+        }
+    }
+    else mStepTimer = STEP_TIME;   // the first step sounds right away
 
     // the lava: new tiles swell in, and every so often it spreads a step.
     // The hotter it is, the shorter the wait.
@@ -529,15 +534,10 @@ void LevelScene::update(float deltaTime)
     if (isLavaAt(mGameState.player->getPosition()))
         mGameState.playerDied = true;
 
-    if (mGameState.playerDied) StopSound(mStepsSound);
-
     // through the open door: on to the next room
     if (!mGameState.playerDied && mDoorUnlocked &&
         mGameState.player->isColliding(mOpenDoor))
-    {
-        StopSound(mStepsSound);
         mGameState.nextSceneID = mNextLevel;
-    }
 }
 
 // a bar that fills from the left
@@ -582,7 +582,6 @@ void LevelScene::render()
     // according to how hot it is
     mLavaShader.begin();
     mLavaShader.setInt("heat", mHeat);
-    mLavaShader.setFloat("time", (float) GetTime());
 
     int columns = mGameState.map->getMapColumns();
     int rows    = mGameState.map->getMapRows();
@@ -665,17 +664,23 @@ void LevelScene::shutdown()
     mStations     = nullptr;
     mStationCount = 0;
 
-    Entity **interface[] = {
-        &mLavaTile, &mStationOnTop, &mKeyPrompt, &mIconOff, &mIconOn,
-        &mValvePanel, &mGaugePanel, &mValveWheel, &mGaugeDial, &mGaugeZone,
-        &mGaugeNeedle, &mBarBack, &mBarGreen, &mBarOrange, &mHotterBanner,
-        &mDoneBanner, &mOpenBanner
-    };
-    for (Entity **entity : interface)
-    {
-        delete *entity;
-        *entity = nullptr;
-    }
+    delete mLavaTile;      mLavaTile      = nullptr;
+    delete mStationOnTop;  mStationOnTop  = nullptr;
+    delete mKeyPrompt;     mKeyPrompt     = nullptr;
+    delete mIconOff;       mIconOff       = nullptr;
+    delete mIconOn;        mIconOn        = nullptr;
+    delete mValvePanel;    mValvePanel    = nullptr;
+    delete mGaugePanel;    mGaugePanel    = nullptr;
+    delete mValveWheel;    mValveWheel    = nullptr;
+    delete mGaugeDial;     mGaugeDial     = nullptr;
+    delete mGaugeZone;     mGaugeZone     = nullptr;
+    delete mGaugeNeedle;   mGaugeNeedle   = nullptr;
+    delete mBarBack;       mBarBack       = nullptr;
+    delete mBarGreen;      mBarGreen      = nullptr;
+    delete mBarOrange;     mBarOrange     = nullptr;
+    delete mHotterBanner;  mHotterBanner  = nullptr;
+    delete mDoneBanner;    mDoneBanner    = nullptr;
+    delete mOpenBanner;    mOpenBanner    = nullptr;
     mShownBanner = nullptr;
 
     mLavaShader.unload();
@@ -688,7 +693,7 @@ void LevelScene::shutdown()
         UnloadSound(mHotterSound);
         UnloadSound(mTaskDoneSound);
         UnloadSound(mDoorSound);
-        UnloadSound(mStepsSound);
+        UnloadSound(mStepSound);
         mSoundsLoaded = false;
     }
 }

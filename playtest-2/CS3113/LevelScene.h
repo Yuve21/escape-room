@@ -19,6 +19,7 @@ public:
                            INTERACT_RANGE   = 75.0f,  // how close to a station E works
                            LAVA_GROW_TIME   = 0.35f,  // a new lava tile swells in over this long
                            BANNER_TIME      = 1.6f,   // how long a message stays up
+                           STEP_TIME        = 0.3f,   // seconds between footsteps
                            GAUGE_SWING      = 70.0f,  // the needle swings this far each way (degrees)
                            WIDE_ZONE_HALF   = 16.0f,  // half the green zone, matches zone_wide.png
                            NARROW_ZONE_HALF = 9.0f;   // half the green zone, matches zone_narrow.png
@@ -97,7 +98,8 @@ protected:
     // ----- sounds ----- //
     bool  mSoundsLoaded = false;
     Sound mOpenSound, mCrankSound, mHitSound, mHotterSound,
-          mTaskDoneSound, mDoorSound, mStepsSound;
+          mTaskDoneSound, mDoorSound, mStepSound;
+    float mStepTimer = 0.0f;   // a footstep plays every STEP_TIME while walking
 
     // ----- building a room ----- //
     void resetRoom();
